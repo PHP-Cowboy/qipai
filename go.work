@@ -3,7 +3,7 @@ use (
 	common
 	connector
 	core
-	framework
+	frame
 	game
 	gate
 	hall
