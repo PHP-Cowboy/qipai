@@ -14,17 +14,15 @@
 	],
 	"servers": [
 		{
-			"id": "hall-001",
-			"serverType": "hall",
+			"id": "game-AB",
+			"serverType": "game",
 			"handleTimeOut": 10,
-			"rpcTimeOut": 5,
 			"maxRunRoutineNum": 10240
 		},
 		{
-			"id": "game-001",
+			"id": "game-Crash",
 			"serverType": "game",
 			"handleTimeOut": 10,
-			"rpcTimeOut": 5,
 			"maxRunRoutineNum": 10240
 		}
 	]
