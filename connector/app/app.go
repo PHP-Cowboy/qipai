@@ -10,7 +10,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"time"
 )
 
 func Run(ctx context.Context, serverId string) error {
@@ -32,16 +31,12 @@ func Run(ctx context.Context, serverId string) error {
 	}()
 
 	<-quit
-	log.Println("Websocket server is shutting down...")
+	log.Println("server is shutting down...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	c.Close()
 
-	if err := c.Close(ctx); err != nil {
-		log.Fatalf("Could not gracefully shutdown the server: %v", err)
-	}
 	close(done)
-	log.Println("Websocket server stopped")
+	log.Println("server stopped")
 
 	return nil
 }
