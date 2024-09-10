@@ -2,6 +2,7 @@ package net
 
 import (
 	"common/logs"
+	"frame/remote"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"sync"
@@ -27,6 +28,8 @@ type WsManager struct {
 	clients            map[string]Connection
 	ConnectorHandlers  LogicHandler
 	ClientReadChan     chan *MsgPack
+	RemoteReadChan     chan []byte
+	RemoteCli          remote.Client
 }
 
 func NewWsManager() *WsManager {
@@ -34,6 +37,7 @@ func NewWsManager() *WsManager {
 		websocketUpgrade: &websocketUpgrade,
 		clients:          make(map[string]Connection),
 		ClientReadChan:   make(chan *MsgPack, 1024),
+		RemoteReadChan:   make(chan []byte, 1024),
 	}
 }
 

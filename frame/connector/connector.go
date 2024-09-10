@@ -1,6 +1,9 @@
 package connector
 
-import "frame/net"
+import (
+	"frame/net"
+	"frame/remote"
+)
 
 type Connector struct {
 	isRunning bool
@@ -35,7 +38,9 @@ func (c *Connector) Close() {
 	c.wsManager.Close()
 }
 
-func (c *Connector) Serve() {
+func (c *Connector) Serve(serverId string) {
+	c.wsManager.ServerId = serverId
+
 	c.wsManager.Run()
 }
 
