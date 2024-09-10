@@ -10,3 +10,7 @@ func NewWsManager() *WsManager {
 func (m *WsManager) Run() {
 
 }
+
+func (m *WsManager) Close() {
+
+}
