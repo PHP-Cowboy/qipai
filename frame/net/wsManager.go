@@ -2,6 +2,8 @@ package net
 
 import (
 	"common/logs"
+	"fmt"
+	"frame/remote"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"sync"
@@ -27,6 +29,8 @@ type WsManager struct {
 	clients            map[string]Connection
 	ConnectorHandlers  LogicHandler
 	ClientReadChan     chan *MsgPack
+	RemoteReadChan     chan []byte
+	RemoteCli          remote.Client
 }
 
 func NewWsManager() *WsManager {
@@ -34,15 +38,23 @@ func NewWsManager() *WsManager {
 		websocketUpgrade: &websocketUpgrade,
 		clients:          make(map[string]Connection),
 		ClientReadChan:   make(chan *MsgPack, 1024),
+		RemoteReadChan:   make(chan []byte, 1024),
 	}
 }
 
-func (m *WsManager) Run() {
+func (m *WsManager) Run(addr string) {
+	go m.clientReadChanHandler()
+	go m.remoteReadChanHandler()
+	http.HandleFunc("/", m.serveWS)
 
+	logs.Fatal("connector listen serve err:%v", http.ListenAndServe(addr, nil))
 }
 
 func (m *WsManager) Close() {
-
+	for cid, v := range m.clients {
+		v.Close()
+		delete(m.clients, cid)
+	}
 }
 
 func (m *WsManager) serveWS(w http.ResponseWriter, r *http.Request) {
@@ -61,4 +73,33 @@ func (m *WsManager) addClient(client *WsConnection) {
 	m.Lock()
 	defer m.Unlock()
 	m.clients[client.Cid] = client
+}
+
+func (m *WsManager) clientReadChanHandler() {
+	for {
+		select {
+		case body, ok := <-m.ClientReadChan:
+			if ok {
+				fmt.Println(body)
+			}
+		}
+	}
+}
+
+func (m *WsManager) remoteReadChanHandler() {
+	for {
+		select {
+		case msg := <-m.RemoteReadChan:
+			logs.Info("sub nats msg:%v", string(msg))
+		}
+	}
+}
+
+func (m *WsManager) removeClient(wc *WsConnection) {
+	for cid, c := range m.clients {
+		if cid == wc.Cid {
+			c.Close()
+			delete(m.clients, cid)
+		}
+	}
 }
