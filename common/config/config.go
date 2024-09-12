@@ -43,17 +43,18 @@ type LogConf struct {
 
 // Database 数据库配置
 type Database struct {
-	MongoConf MongoConf `mapstructure:"mongo"`
-	RedisConf RedisConf `mapstructure:"redis"`
+	MysqlConfig MysqlConfig `mapstructure:"mysql"`
+	RedisConf   RedisConf   `mapstructure:"redis"`
 }
-type MongoConf struct {
-	Url         string `mapstructure:"url"`
-	Db          string `mapstructure:"db"`
-	UserName    string `mapstructure:"userName"`
-	Password    string `mapstructure:"password"`
-	MinPoolSize int    `mapstructure:"minPoolSize"`
-	MaxPoolSize int    `mapstructure:"maxPoolSize"`
+
+type MysqlConfig struct {
+	User     string
+	Password string
+	Host     string
+	Port     string
+	Database string
 }
+
 type RedisConf struct {
 	Addr         string   `mapstructure:"addr"`
 	ClusterAddrs []string `mapstructure:"clusterAddrs"`
