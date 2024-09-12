@@ -4,6 +4,7 @@ import "common/database"
 
 type RepoManager struct {
 	Redis *database.RedisManager
+	Db    *database.Db
 }
 
 func (m *RepoManager) Close() {
@@ -16,5 +17,6 @@ func (m *RepoManager) Close() {
 func NewRepoManager() *RepoManager {
 	return &RepoManager{
 		Redis: database.NewRedis(),
+		Db:    database.NewDb(),
 	}
 }
