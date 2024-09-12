@@ -31,7 +31,11 @@ func (c Connector) Run(serverId string) {
 	c.wsManager.ConnectorHandlers = c.handlers
 	//启动nats nats server不会存储消息
 	c.remoteCli = remote.NewNatsClient(serverId, c.wsManager.RemoteReadChan)
-	c.remoteCli.Run()
+	err := c.remoteCli.Run()
+	if err != nil {
+		logs.Fatal("c.remoteCli.Run failed,err:%v", err.Error())
+		return
+	}
 	c.wsManager.RemoteCli = c.remoteCli
 	c.Serve(serverId)
 }
