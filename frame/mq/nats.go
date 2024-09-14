@@ -17,7 +17,7 @@ type App struct {
 	handlers  LogicHandler
 }
 
-func Default() *App {
+func NewMQApp() *App {
 	return &App{
 		readChan:  make(chan []byte, 1024),
 		writeChan: make(chan *remote.Msg, 1024),
@@ -82,6 +82,7 @@ func (a *App) writeChanMsg() {
 				err := a.remoteCli.SendMsg(msg.Dst, marshal)
 				if err != nil {
 					logs.Error("app remote send msg err:%v", err)
+					return
 				}
 			}
 		}

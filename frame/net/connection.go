@@ -7,6 +7,7 @@ type Connection interface {
 }
 
 type MsgPack struct {
-	Cid  string
-	Body []byte
+	Cid     string `json:"cid"`
+	Handler string `json:"handler"`
+	Body    []byte `json:"body"`
 }

@@ -49,7 +49,7 @@ func (c *Connector) Close() {
 
 func (c *Connector) Serve(serverId string) {
 	logs.Info("run connector:%v", serverId)
-	//地址 需要读取配置文件 在游戏中可能加载很多的信息（配置） 如果写到yml可能会比较复杂 不容易维护
+
 	//游戏中的配置 读取 一般采用json的方式 需要读取json的配置文件
 	c.wsManager.ServerId = serverId
 

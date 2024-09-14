@@ -97,6 +97,8 @@ func (c *WsConnection) writeMessage() {
 			}
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				logs.Error("client[%s] ping  err :%v", c.Cid, err)
+				c.Close()
+				ticker.Stop()
 			}
 		}
 	}

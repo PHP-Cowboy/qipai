@@ -46,7 +46,7 @@ type ConnectorConfig struct {
 	ServerType string `json:"serverType" `
 }
 type NatsConfig struct {
-	Url string `json:"url" mapstructure:"db"`
+	Url string `json:"url"`
 }
 
 type GameConfigValue map[string]any
@@ -149,6 +149,11 @@ func readGameConfig(configFile string) {
 }
 
 func (c *Config) GetConnector(serverId string) *ConnectorConfig {
+
+	b, _ := json.Marshal(c.ServersConf)
+
+	fmt.Println(string(b))
+
 	for _, v := range c.ServersConf.Connector {
 		if v.ID == serverId {
 			return v
