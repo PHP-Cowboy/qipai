@@ -41,7 +41,7 @@ type LogConf struct {
 	Level string `mapstructure:"level"`
 }
 
-// Database 数据库配置
+// 数据库配置
 type Database struct {
 	MysqlConfig MysqlConfig `mapstructure:"mysql"`
 	RedisConf   RedisConf   `mapstructure:"redis"`
@@ -81,7 +81,7 @@ type GrpcConf struct {
 	Addr string `mapstructure:"addr"`
 }
 
-// InitConfig 加载配置
+// 加载配置
 func InitConfig(confFile string) {
 	Conf = new(Config)
 	v := viper.New()

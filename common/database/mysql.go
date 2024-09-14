@@ -34,7 +34,7 @@ func NewDb() *Db {
 	return &Db{db}
 }
 
-// GetRows 根据查询语句获取多行数据
+// 根据查询语句获取多行数据
 func (*Db) GetRows(db *sqlx.DB, query string, result interface{}) error {
 	err := db.Select(result, query)
 	if err != nil {
@@ -47,7 +47,7 @@ func (*Db) GetRows(db *sqlx.DB, query string, result interface{}) error {
 	return nil
 }
 
-// GetRow 根据查询语句获取单行数据
+// 根据查询语句获取单行数据
 func (*Db) GetRow(db *sqlx.DB, query string, result interface{}) error {
 	err := db.Get(result, query)
 	if err != nil {
@@ -60,7 +60,7 @@ func (*Db) GetRow(db *sqlx.DB, query string, result interface{}) error {
 	return nil
 }
 
-// Execute 执行增删改等操作
+// 执行增删改等操作
 func (*Db) Execute(db *sqlx.DB, query string, args ...interface{}) (sql.Result, error) {
 	result, err := db.Exec(query, args...)
 	if err != nil {
