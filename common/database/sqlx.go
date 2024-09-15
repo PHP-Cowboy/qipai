@@ -2,7 +2,7 @@ package database
 
 import (
 	"common/config"
-	"common/logs"
+	"common/global"
 	"database/sql"
 	"fmt"
 	"log"
@@ -17,18 +17,18 @@ type Db struct {
 
 // 创建数据库连接
 func NewDb() *Db {
-	cfg := config.Conf.Database.MysqlConfig
+	cfg := config.Conf.Database.Mysql
 
 	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
 	db, err := sqlx.Open("mysql", dataSourceName)
 	if err != nil {
-		logs.Fatal("NewDb failed,err:%s", err.Error())
+		global.Logger["err"].Fatalf("NewDb failed,err:%s", err.Error())
 
 		return nil
 	}
 	if err = db.Ping(); err != nil {
-		logs.Fatal("db.Ping() failed,err:%s", err.Error())
+		global.Logger["err"].Fatalf("db.Ping() failed,err:%s", err.Error())
 		return nil
 	}
 	return &Db{db}
@@ -39,7 +39,6 @@ func (*Db) GetRows(db *sqlx.DB, query string, result interface{}) error {
 	err := db.Select(result, query)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Println("No rows found")
 			return nil
 		}
 		return err

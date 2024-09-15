@@ -1,4 +1,4 @@
-package msError
+package err
 
 type Error struct {
 	Code int

@@ -2,7 +2,7 @@ package database
 
 import (
 	"common/config"
-	"common/logs"
+	"common/global"
 	"context"
 	"github.com/redis/go-redis/v9"
 	"time"
@@ -18,32 +18,32 @@ func NewRedis() *RedisManager {
 	defer cancel()
 	var clusterCli *redis.ClusterClient
 	var cli *redis.Client
-	addrs := config.Conf.Database.RedisConf.ClusterAddrs
+	addrs := config.Conf.Database.Redis.ClusterAddrList
 	if len(addrs) == 0 {
 		//非集群 单节点
 		cli = redis.NewClient(&redis.Options{
-			Addr:         config.Conf.Database.RedisConf.Addr,
-			PoolSize:     config.Conf.Database.RedisConf.PoolSize,
-			MinIdleConns: config.Conf.Database.RedisConf.MinIdleConns,
-			Password:     config.Conf.Database.RedisConf.Password,
+			Addr:         config.Conf.Database.Redis.Addr,
+			PoolSize:     config.Conf.Database.Redis.PoolSize,
+			MinIdleConns: config.Conf.Database.Redis.MinIdleConnNum,
+			Password:     config.Conf.Database.Redis.Password,
 		})
 	} else {
 		clusterCli = redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs:        config.Conf.Database.RedisConf.ClusterAddrs,
-			PoolSize:     config.Conf.Database.RedisConf.PoolSize,
-			MinIdleConns: config.Conf.Database.RedisConf.MinIdleConns,
-			Password:     config.Conf.Database.RedisConf.Password,
+			Addrs:        config.Conf.Database.Redis.ClusterAddrList,
+			PoolSize:     config.Conf.Database.Redis.PoolSize,
+			MinIdleConns: config.Conf.Database.Redis.MinIdleConnNum,
+			Password:     config.Conf.Database.Redis.Password,
 		})
 	}
 	if clusterCli != nil {
 		if err := clusterCli.Ping(ctx).Err(); err != nil {
-			logs.Fatal("redis cluster connect err:%v", err)
+			global.Logger["err"].Fatalf("redis cluster connect err:%v", err)
 			return nil
 		}
 	}
 	if cli != nil {
 		if err := cli.Ping(ctx).Err(); err != nil {
-			logs.Fatal("redis connect err:%v", err)
+			global.Logger["err"].Fatalf("redis connect err:%v", err)
 			return nil
 		}
 	}
@@ -56,12 +56,12 @@ func NewRedis() *RedisManager {
 func (r *RedisManager) Close() {
 	if r.ClusterCli != nil {
 		if err := r.ClusterCli.Close(); err != nil {
-			logs.Error("redis cluster close err:%v", err)
+			global.Logger["err"].Errorf("redis cluster close err:%v", err)
 		}
 	}
 	if r.Cli != nil {
 		if err := r.Cli.Close(); err != nil {
-			logs.Error("redis close err:%v", err)
+			global.Logger["err"].Errorf("redis close err:%v", err)
 		}
 	}
 }

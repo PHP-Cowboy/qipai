@@ -1,15 +1,11 @@
 package net
 
 import (
-	"common/logs"
-	"fmt"
+	"common/global"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"sync/atomic"
 	"time"
 )
-
-var cidBase uint64 = 10000
 
 var (
 	pongWait             = 10 * time.Second
@@ -55,7 +51,7 @@ func (c *WsConnection) readMessage() {
 	}()
 	c.Conn.SetReadLimit(maxMessageSize)
 	if err := c.Conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
-		logs.Error("SetReadDeadline err:%v", err)
+		global.Logger["err"].Errorf("SetReadDeadline err:%v", err)
 		return
 	}
 	for {
@@ -72,33 +68,36 @@ func (c *WsConnection) readMessage() {
 				}
 			}
 		} else {
-			logs.Error("unsupported message type : %d", messageType)
+			global.Logger["err"].Errorf("unsupported message type : %d", messageType)
 		}
 	}
 }
 
 func (c *WsConnection) writeMessage() {
 	ticker := time.NewTicker(pingInterval)
+
+	defer ticker.Stop()
+
 	for {
 		select {
 		case message, ok := <-c.WriteChan:
 			if !ok {
 				if err := c.Conn.WriteMessage(websocket.CloseMessage, nil); err != nil {
-					logs.Error("connection closed, %v", err)
+					global.Logger["err"].Errorf("connection closed, %v", err)
 				}
 				return
 			}
 			if err := c.Conn.WriteMessage(websocket.TextMessage, message); err != nil {
-				logs.Error("client[%s] write message err :%v", c.Cid, err)
+				global.Logger["err"].Errorf("client[%s] write message err :%v", c.Cid, err)
 			}
 		case <-ticker.C:
 			if err := c.Conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
-				logs.Error("client[%s] ping SetWriteDeadline err :%v", c.Cid, err)
+				global.Logger["err"].Errorf("client[%s] ping SetWriteDeadline err :%v", c.Cid, err)
 			}
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				logs.Error("client[%s] ping  err :%v", c.Cid, err)
+				global.Logger["err"].Errorf("client[%s] ping  err :%v", c.Cid, err)
 				c.Close()
-				ticker.Stop()
+				return
 			}
 		}
 	}
@@ -112,7 +111,7 @@ func (c *WsConnection) PongHandler(data string) error {
 }
 
 func NewWsConnection(conn *websocket.Conn, manager *WsManager) *WsConnection {
-	cid := fmt.Sprintf("%s-%s-%d", uuid.New().String(), manager.ServerId, atomic.AddUint64(&cidBase, 1))
+	cid := uuid.New().String()
 	return &WsConnection{
 		Conn:      conn,
 		manager:   manager,

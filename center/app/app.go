@@ -1,22 +1,18 @@
 package app
 
 import (
-	"common/config"
-	"common/logs"
-	"connector/router"
+	"center/router"
 	"context"
 	"core/repo"
-	"frame/connector"
+	"frame/center"
 	"log"
 	"os"
 	"os/signal"
 )
 
 func Run(ctx context.Context, serverId string) error {
-	//1.做一个日志库 info error fatal debug
-	logs.InitLog(config.Conf.AppName)
 
-	c := connector.NewConnector()
+	c := center.NewCenter()
 
 	repoManager := repo.NewRepoManager()
 

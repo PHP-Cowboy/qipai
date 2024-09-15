@@ -1,7 +1,7 @@
 package net
 
 import (
-	"common/logs"
+	"common/global"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -32,7 +32,7 @@ type WsManager struct {
 	ServerId           string
 	CheckOriginHandler CheckOriginHandler
 	clients            map[string]Connection
-	ConnectorHandlers  LogicHandler
+	CenterHandlers     LogicHandler
 	ClientReadChan     chan *MsgPack
 	RemoteReadChan     chan []byte
 	RemoteCli          remote.Client
@@ -55,7 +55,7 @@ func (m *WsManager) Run(addr string) {
 	http.HandleFunc("/", m.serveWS)
 	//设置不同的消息处理器
 	m.setupEventHandlers()
-	logs.Fatal("connector listen serve err:%v", http.ListenAndServe(addr, nil))
+	global.Logger["err"].Fatalf("center listen serve err:%v", http.ListenAndServe(addr, nil))
 }
 
 func (m *WsManager) Close() {
@@ -69,7 +69,7 @@ func (m *WsManager) serveWS(w http.ResponseWriter, r *http.Request) {
 
 	wsConn, err := m.websocketUpgrade.Upgrade(w, r, nil)
 	if err != nil {
-		logs.Error("websocketUpgrade.Upgrade err:%v", err)
+		global.Logger["err"].Errorf("websocketUpgrade.Upgrade err:%v", err)
 		return
 	}
 	client := NewWsConnection(wsConn, m)
@@ -104,7 +104,7 @@ func (m *WsManager) remoteReadChanHandler() {
 	for {
 		select {
 		case msg := <-m.RemoteReadChan:
-			logs.Info("sub nats msg:%v", string(msg))
+			global.Logger["err"].Infof("sub nats msg:%v", string(msg))
 		}
 	}
 }
@@ -120,7 +120,7 @@ func (m *WsManager) removeClient(wc *WsConnection) {
 
 func (m *WsManager) decodeClientPack(body *MsgPack) {
 	if err := m.routeEvent(body); err != nil {
-		logs.Error("routeEvent err:%v", err)
+		global.Logger["err"].Errorf("routeEvent err:%v", err)
 	}
 }
 
@@ -145,8 +145,8 @@ func (m *WsManager) setupEventHandlers() {
 
 func (m *WsManager) MessageHandler(msg *MsgPack, c Connection) error {
 	msg.Handler = "entryHandler.entry"
-	//本地connector服务器处理
-	handler, ok := m.ConnectorHandlers[msg.Handler]
+	//本地Center服务器处理
+	handler, ok := m.CenterHandlers[msg.Handler]
 	if ok {
 		data, err := handler(c.GetSession(), msg.Body)
 		if err != nil {

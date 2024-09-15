@@ -1,7 +1,7 @@
 package mq
 
 import (
-	"common/logs"
+	"common/global"
 	"encoding/json"
 	"frame/remote"
 )
@@ -44,7 +44,7 @@ func (a *App) readChanMsg() {
 			var remoteMsg remote.Msg
 			err := json.Unmarshal(msg, &remoteMsg)
 			if err != nil {
-				logs.Error("json.Unmarshal failed,msg:%v,err:%v", string(msg), err.Error())
+				global.Logger["err"].Error("json.Unmarshal failed,msg:%v,err:%v", string(msg), err.Error())
 				return
 			}
 			session := remote.NewSession(a.remoteCli, &remoteMsg)
@@ -81,7 +81,7 @@ func (a *App) writeChanMsg() {
 				marshal, _ := json.Marshal(msg)
 				err := a.remoteCli.SendMsg(msg.Dst, marshal)
 				if err != nil {
-					logs.Error("app remote send msg err:%v", err)
+					global.Logger["err"].Error("app remote send msg err:%v", err)
 					return
 				}
 			}
@@ -93,7 +93,7 @@ func (a *App) Close() {
 	if a.remoteCli != nil {
 		err := a.remoteCli.Close()
 		if err != nil {
-			logs.Error("a.remoteCli.Close() failed,err:%v", err.Error())
+			global.Logger["err"].Error("a.remoteCli.Close() failed,err:%v", err.Error())
 			return
 		}
 	}

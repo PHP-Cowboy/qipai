@@ -1,12 +1,10 @@
 package game
 
 import (
-	"common/logs"
-	"encoding/json"
+	"common/global"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -24,9 +22,9 @@ type Config struct {
 	ServersConf ServersConf                `json:"serversConf"`
 }
 type ServersConf struct {
-	Nats       NatsConfig         `json:"nats" `
-	Connector  []*ConnectorConfig `json:"connector" `
-	Servers    []*ServersConfig   `json:"servers" `
+	Nats       NatsConfig       `json:"nats" `
+	Center     []*CenterConfig  `json:"center" `
+	Servers    []*ServersConfig `json:"servers" `
 	TypeServer map[string][]*ServersConfig
 }
 
@@ -38,7 +36,7 @@ type ServersConfig struct {
 	MaxRunRoutineNum int    `json:"maxRunRoutineNum" `
 }
 
-type ConnectorConfig struct {
+type CenterConfig struct {
 	ID         string `json:"id" `
 	Host       string `json:"host" `
 	ClientPort int    `json:"clientPort" `
@@ -55,7 +53,8 @@ func InitConfig(configDir string) {
 	Conf = new(Config)
 	dir, err := os.ReadDir(configDir)
 	if err != nil {
-		logs.Fatal("read config dir err:%v", err)
+		global.Logger["err"].Fatalf("read config dir err:%v", err)
+		return
 	}
 	for _, v := range dir {
 		configFile := path.Join(configDir, v.Name())
@@ -109,52 +108,38 @@ func typeServersConfig() {
 }
 
 func readGameConfig(configFile string) {
-	//gc := make(map[string]GameConfigValue)
-	//v := viper.New()
-	//v.SetConfigFile(configFile)
-	//v.WatchConfig()
-	//v.OnConfigChange(func(in fsnotify.Event) {
-	//	log.Println("gameConfig配置文件被修改了")
-	//	err := v.Unmarshal(&gc)
-	//	if err != nil {
-	//		panic(fmt.Errorf("gameConfig Unmarshal change config data,err:%v \n", err))
-	//	}
-	//	Conf.GameConfig = gc
-	//})
-	//err := v.ReadInConfig()
-	//if err != nil {
-	//	panic(fmt.Errorf("gameConfig 读取配置文件出错,err:%v \n", err))
-	//}
-	//log.Println("%v", v.AllKeys())
-	//err = v.Unmarshal(&gc)
-	//if err != nil {
-	//	panic(fmt.Errorf("gameConfig Unmarshal config data,err:%v \n", err))
-	//}
-	//Conf.GameConfig = gc
-	file, err := os.Open(configFile)
+	gc := make(map[string]GameConfigValue)
+	v := viper.New()
+	v.SetConfigFile(configFile)
+	v.WatchConfig()
+	v.OnConfigChange(func(in fsnotify.Event) {
+		log.Println("gameConfig配置文件被修改了")
+		err := v.Unmarshal(&gc)
+		if err != nil {
+			panic(fmt.Errorf("gameConfig Unmarshal change config data,err:%v \n", err))
+		}
+		Conf.GameConfig = gc
+	})
+	err := v.ReadInConfig()
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("gameConfig 读取配置文件出错,err:%v \n", err))
 	}
-	defer file.Close()
-	data, err := io.ReadAll(file)
+	log.Println("%v", v.AllKeys())
+	err = v.Unmarshal(&gc)
 	if err != nil {
-		panic(err)
-	}
-	var gc map[string]GameConfigValue
-	err = json.Unmarshal(data, &gc)
-	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("gameConfig Unmarshal config data,err:%v \n", err))
 	}
 	Conf.GameConfig = gc
+
 }
 
-func (c *Config) GetConnector(serverId string) *ConnectorConfig {
+func (c *Config) GetCenter(serverId string) *CenterConfig {
 
-	b, _ := json.Marshal(c.ServersConf)
+	//b, _ := json.Marshal(c.ServersConf)
+	//
+	//fmt.Println(string(b))
 
-	fmt.Println(string(b))
-
-	for _, v := range c.ServersConf.Connector {
+	for _, v := range c.ServersConf.Center {
 		if v.ID == serverId {
 			return v
 		}
@@ -162,8 +147,8 @@ func (c *Config) GetConnector(serverId string) *ConnectorConfig {
 	return nil
 }
 
-func (c *Config) GetConnectorByServerType(serverType string) *ConnectorConfig {
-	for _, v := range c.ServersConf.Connector {
+func (c *Config) GetCenterByServerType(serverType string) *CenterConfig {
+	for _, v := range c.ServersConf.Center {
 		if v.ServerType == serverType {
 			return v
 		}

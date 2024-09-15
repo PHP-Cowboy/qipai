@@ -1,11 +1,9 @@
-go 1.21.0
+go 1.22
+
 use (
 	common
-	connector
+	center
 	core
 	frame
-	game
-	gate
-	hall
-	user
+	games
 )

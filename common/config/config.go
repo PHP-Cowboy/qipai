@@ -4,81 +4,56 @@ import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
-	"log"
 )
 
 var Conf *Config
 
 type Config struct {
-	Log        LogConf                 `mapstructure:"log"`
-	Port       int                     `mapstructure:"port"`
-	WsPort     int                     `mapstructure:"wsPort"`
-	MetricPort int                     `mapstructure:"metricPort"`
-	HttpPort   int                     `mapstructure:"httpPort"`
-	AppName    string                  `mapstructure:"appName"`
-	Database   Database                `mapstructure:"db"`
-	Jwt        JwtConf                 `mapstructure:"jwt"`
-	Grpc       GrpcConf                `mapstructure:"grpc"`
-	Etcd       EtcdConf                `mapstructure:"etcd"`
-	Domain     map[string]Domain       `mapstructure:"domain"`
-	Services   map[string]ServicesConf `mapstructure:"services"`
+	Database Database `json:"database"`
+	Jwt      JwtConf  `json:"jwt"`
+	Etcd     EtcdConf `json:"etcd"`
 }
 
-type ServicesConf struct {
-	Id         string `mapstructure:"id"`
-	ClientHost string `mapstructure:"clientHost"`
-	ClientPort int    `mapstructure:"clientPort"`
-}
-type Domain struct {
-	Name        string `mapstructure:"name"`
-	LoadBalance bool   `mapstructure:"loadBalance"`
-}
 type JwtConf struct {
-	Secret string `mapstructure:"secret"`
-	Exp    int64  `mapstructure:"exp"`
-}
-type LogConf struct {
-	Level string `mapstructure:"level"`
+	Secret string `json:"secret"`
+	Exp    int64  `json:"exp"`
 }
 
 // 数据库配置
 type Database struct {
-	MysqlConfig MysqlConfig `mapstructure:"mysql"`
-	RedisConf   RedisConf   `mapstructure:"redis"`
+	Mysql MysqlConfig `json:"mysql"`
+	Redis RedisConf   `json:"redis"`
 }
 
 type MysqlConfig struct {
-	User     string
-	Password string
-	Host     string
-	Port     string
-	Database string
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	Database string `json:"database"`
 }
 
 type RedisConf struct {
-	Addr         string   `mapstructure:"addr"`
-	ClusterAddrs []string `mapstructure:"clusterAddrs"`
-	Password     string   `mapstructure:"password"`
-	PoolSize     int      `mapstructure:"poolSize"`
-	MinIdleConns int      `mapstructure:"minIdleConns"`
-	Host         string   `mapstructure:"host"`
-	Port         int      `mapstructure:"port"`
+	Addr            string   `json:"addr"`
+	ClusterAddrList []string `json:"clusterAddrList"`
+	Password        string   `json:"password"`
+	PoolSize        int      `json:"poolSize"`
+	MinIdleConnNum  int      `json:"minIdleConnNum"`
+	Host            string   `json:"host"`
+	Port            int      `json:"port"`
 }
 type EtcdConf struct {
-	Addrs       []string       `mapstructure:"addrs"`
-	RWTimeout   int            `mapstructure:"rwTimeout"`
-	DialTimeout int            `mapstructure:"dialTimeout"`
-	Register    RegisterServer `mapstructure:"register"`
+	AddrList    []string       `json:"addrList"`
+	RWTimeout   int            `json:"rwTimeout"`
+	DialTimeout int            `json:"dialTimeout"`
+	Register    RegisterServer `json:"register"`
 }
 type RegisterServer struct {
-	Addr    string `mapstructure:"addr"`
-	Name    string `mapstructure:"name"`
-	Version string `mapstructure:"version"`
-	Weight  int    `mapstructure:"weight"`
-	Ttl     int64  `mapstructure:"ttl"` //租约时长
-}
-type GrpcConf struct {
-	Addr string `mapstructure:"addr"`
+	Addr    string `json:"addr"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	Weight  int    `json:"weight"`
+	Ttl     int64  `json:"ttl"`
 }
 
 // 加载配置
@@ -88,7 +63,6 @@ func InitConfig(confFile string) {
 	v.SetConfigFile(confFile)
 	v.WatchConfig()
 	v.OnConfigChange(func(in fsnotify.Event) {
-		log.Println("配置文件被修改了")
 		err := v.Unmarshal(&Conf)
 		if err != nil {
 			panic(fmt.Errorf("Unmarshal change config data,err:%v \n", err))

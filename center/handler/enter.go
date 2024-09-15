@@ -11,10 +11,12 @@ type EnterHandler struct {
 }
 
 func (h *EnterHandler) Enter(session *net.Session, body []byte) (any, error) {
-	return nil, nil
+	//1.校验权限，获取用户信息，游戏房间信息
+	//2.加入游戏，
+	return "bbb", nil
 }
 
-func NewEntryHandler(r *repo.RepoManager) *EnterHandler {
+func NewEnterHandler(r *repo.RepoManager) *EnterHandler {
 	return &EnterHandler{
 		userService: service.NewUserService(r),
 	}
